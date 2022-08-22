@@ -31,11 +31,15 @@ docker run -v /output/path/:/app/out/ -t belval/trdg:latest trdg [args]
 The path (`/output/path/`) must be absolute.
 
 ## New
+- Add `--stroke_width` argument to set the width of the text stroke (Thank you [@SunHaozhe](https://github.com/SunHaozhe))
+- Add `--stroke_fill` argument to set the color of the text contour if stroke > 0 (Thank you [@SunHaozhe](https://github.com/SunHaozhe))
+- Add `--word_split` argument to split on word instead of per-character. This is useful for ligature-based languages
+- Add `--dict` argument to specify a custom dictionary (Thank you [@luh0907](https://github.com/luh0907))
 - Add `--font_dir` argument to specify the fonts to use
 - Add `--output_mask` to output character-level mask for each image
 - Add `--character_spacing` to control space between characters (in pixels)
 - Add python module
-- Add `--font` to use only one font for all the generated images (Thank you @JulienCoutault!)
+- Add `--font` to use only one font for all the generated images (Thank you [@JulienCoutault](https://github.com/JulienCoutault)!)
 - Add `--fit` and `--margins` for finer layout control
 - Change the text orientation using the `-or` parameter
 - Specify text color range using `-tc '#000000,#FFFFFF'`, please note that the quotes are **necessary**
@@ -117,14 +121,14 @@ But scanned document usually aren't that clear are they? Add `-bl` and `-rbl` to
 
 ### Background
 
-Maybe you want another background? Add `-b` to define one of the three available backgrounds: gaussian noise (0), plain white (1), quasicrystal (2) or picture (3).
+Maybe you want another background? Add `-b` to define one of the three available backgrounds: gaussian noise (0), plain white (1), quasicrystal (2) or image (3).
 
 ![15](samples/15.jpg "0")
 ![16](samples/16.jpg "1")
 ![17](samples/17.jpg "2")
 ![23](samples/23.jpg "3")
 
-When using picture background (3). A picture from the pictures/ folder will be randomly selected and the text will be written on it.
+When using image background (3). A image from the images/ folder will be randomly selected and the text will be written on it.
 
 ### Handwritten
 
@@ -168,6 +172,7 @@ The script picks a font at random from the *fonts* directory.
 |:----|:-----|
 | fonts/latin | English, French, Spanish, German |
 | fonts/cn | Chinese |
+| fonts/ko | Korean |
 
 Simply add/remove fonts until you get the desired output.
 

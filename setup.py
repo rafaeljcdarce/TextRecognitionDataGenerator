@@ -12,7 +12,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="trdg",
-    version="1.3.2",
+    version="1.7.0",
     description="TextRecognitionDataGenerator: A synthetic data generator for text recognition",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -26,11 +26,9 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
@@ -46,7 +44,8 @@ setup(
         "requests>=2.20.0",
         "opencv-python==4.2.0.32",
         "tqdm>=4.23.0",
-        "beautifulsoup4>=4.6.0"
+        "beautifulsoup4>=4.6.0",
+        "diffimg==0.2.3",
     ],
     entry_points={
         "console_scripts": [

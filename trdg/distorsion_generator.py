@@ -18,10 +18,10 @@ def _apply_func_distorsion(image, mask, vertical, horizontal, max_offset, func):
 
     # FIXME: From looking at the code I think both are already RGBA
     rgb_image = image.convert("RGBA")
-    rgb_mask = image.convert("RGB")
+    rgb_mask = mask.convert("RGB")
 
     img_arr = np.array(rgb_image)
-    mask_arr = np.array(mask)
+    mask_arr = np.array(rgb_mask)
 
     vertical_offsets = [func(i) for i in range(img_arr.shape[1])]
     horizontal_offsets = [
@@ -93,7 +93,7 @@ def _apply_func_distorsion(image, mask, vertical, horizontal, max_offset, func):
         ).convert("RGBA"),
         Image.fromarray(
             np.uint8(new_mask_arr_copy if horizontal and vertical else new_mask_arr)
-        ).convert("RGB")
+        ).convert("RGB"),
     )
 
 
@@ -139,5 +139,10 @@ def random(image, mask, vertical=False, horizontal=False):
     max_offset = int(image.height ** 0.4)
 
     return _apply_func_distorsion(
-        image, mask, vertical, horizontal, max_offset, (lambda x: rnd.randint(0, max_offset))
+        image,
+        mask,
+        vertical,
+        horizontal,
+        max_offset,
+        (lambda x: rnd.randint(0, max_offset)),
     )

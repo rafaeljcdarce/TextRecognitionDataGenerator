@@ -24,10 +24,12 @@ def load_fonts(lang):
     """Load all fonts in the fonts directories
     """
 
-    if lang == "cn":
+    if lang in os.listdir(os.path.join(os.path.dirname(__file__), "fonts")):
         return [
-            os.path.join(os.path.dirname(__file__), "fonts/cn", font)
-            for font in os.listdir(os.path.join(os.path.dirname(__file__), "fonts/cn"))
+            os.path.join(os.path.dirname(__file__), "fonts/{}".format(lang), font)
+            for font in os.listdir(
+                os.path.join(os.path.dirname(__file__), "fonts/{}".format(lang))
+            )
         ]
     else:
         return [

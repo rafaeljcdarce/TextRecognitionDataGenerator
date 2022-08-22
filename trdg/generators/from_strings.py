@@ -1,3 +1,5 @@
+import os
+
 from ..data_generator import FakeTextDataGenerator
 from ..utils import load_dict, load_fonts
 
@@ -29,6 +31,13 @@ class GeneratorFromStrings:
         margins=(5, 5, 5, 5),
         fit=False,
         output_mask=False,
+        word_split=False,
+        image_dir=os.path.join(
+            "..", os.path.split(os.path.realpath(__file__))[0], "images"
+        ),
+        stroke_width=0, 
+        stroke_fill="#282828",
+        image_mode="RGB",
     ):
         self.count = count
         self.strings = strings
@@ -54,7 +63,12 @@ class GeneratorFromStrings:
         self.margins = margins
         self.fit = fit
         self.output_mask = output_mask
+        self.word_split = word_split
+        self.image_dir = image_dir
         self.generated_count = 0
+        self.stroke_width = stroke_width
+        self.stroke_fill = stroke_fill
+        self.image_mode = image_mode 
 
     def __iter__(self):
         return self
@@ -92,6 +106,11 @@ class GeneratorFromStrings:
                 self.margins,
                 self.fit,
                 self.output_mask,
+                self.word_split,
+                self.image_dir,
+                self.stroke_width,
+                self.stroke_fill,
+                self.image_mode, 
             ),
             self.strings[(self.generated_count - 1) % len(self.strings)],
         )

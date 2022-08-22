@@ -47,6 +47,11 @@ class FakeTextDataGenerator(object):
         margins,
         fit,
         output_mask,
+        word_split,
+        image_dir,
+        stroke_width=0, 
+        stroke_fill="#282828",
+        image_mode="RGB", 
     ):
         image = None
 
@@ -71,6 +76,9 @@ class FakeTextDataGenerator(object):
                 space_width,
                 character_spacing,
                 fit,
+                word_split,
+                stroke_width, 
+                stroke_fill,
             )
         random_angle = rnd.randint(0 - skewing_angle, skewing_angle)
 
@@ -123,7 +131,7 @@ class FakeTextDataGenerator(object):
             resized_img = distorted_img.resize(
                 (new_width, size - vertical_margin), Image.ANTIALIAS
             )
-            resized_mask = distorted_mask.resize((new_width, size - vertical_margin))
+            resized_mask = distorted_mask.resize((new_width, size - vertical_margin), Image.NEAREST)
             background_width = width if width > 0 else new_width + horizontal_margin
             background_height = size
         # Vertical text
@@ -136,7 +144,7 @@ class FakeTextDataGenerator(object):
                 (size - horizontal_margin, new_height), Image.ANTIALIAS
             )
             resized_mask = distorted_mask.resize(
-                (size - horizontal_margin, new_height), Image.ANTIALIAS
+                (size - horizontal_margin, new_height), Image.NEAREST
             )
             background_width = size
             background_height = new_height + vertical_margin
@@ -159,10 +167,12 @@ class FakeTextDataGenerator(object):
                 background_height, background_width
             )
         else:
-            background_img = background_generator.picture(
-                background_height, background_width
+            background_img = background_generator.image(
+                background_height, background_width, image_dir
             )
-        background_mask = Image.new("RGB", (background_width, background_height), (0, 0, 0))
+        background_mask = Image.new(
+            "RGB", (background_width, background_height), (0, 0, 0)
+        )
 
         #############################
         # Place text with alignment #
@@ -194,19 +204,29 @@ class FakeTextDataGenerator(object):
                 (background_width - new_text_width - margin_right, margin_top),
             )
 
-        ##################################
+        #######################
         # Apply gaussian blur #
-        ##################################
+        #######################
 
         gaussian_filter = ImageFilter.GaussianBlur(
             radius=blur if not random_blur else rnd.randint(0, blur)
         )
         final_image = background_img.filter(gaussian_filter)
         final_mask = background_mask.filter(gaussian_filter)
+        
+        ############################################
+        # Change image mode (RGB, grayscale, etc.) #
+        ############################################
+        
+        final_image = final_image.convert(image_mode)
+        final_mask = final_mask.convert(image_mode) 
 
         #####################################
         # Generate name for resulting image #
         #####################################
+        # We remove spaces if space_width == 0
+        if space_width == 0:
+            text = text.replace(" ", "")
         if name_format == 0:
             image_name = "{}_{}.{}".format(text, str(index), extension)
             mask_name = "{}_{}_mask.png".format(text, str(index))
@@ -223,10 +243,10 @@ class FakeTextDataGenerator(object):
 
         # Save the image
         if out_dir is not None:
-            final_image.convert("RGB").save(os.path.join(out_dir, image_name))
+            final_image.save(os.path.join(out_dir, image_name))
             if output_mask == 1:
-                final_mask.convert("RGB").save(os.path.join(out_dir, mask_name))
+                final_mask.save(os.path.join(out_dir, mask_name))
         else:
             if output_mask == 1:
-                return final_image.convert("RGB"), final_mask.convert("RGB")
-            return final_image.convert("RGB")
+                return final_image, final_mask
+            return final_image

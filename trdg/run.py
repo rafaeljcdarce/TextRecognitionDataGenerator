@@ -1,7 +1,8 @@
 import argparse
 import os, errno
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import random as rnd
 import string
@@ -22,7 +23,7 @@ from multiprocessing import Pool
 def margins(margin):
     margins = margin.split(",")
     if len(margins) == 1:
-        return [margins[0]] * 4
+        return [int(margins[0])] * 4
     return [int(m) for m in margins]
 
 
@@ -50,7 +51,7 @@ def parse_arguments():
         "--language",
         type=str,
         nargs="?",
-        help="The language to use, should be fr (French), en (English), es (Spanish), de (German), or cn (Chinese).",
+        help="The language to use, should be fr (French), en (English), es (Spanish), de (German), ar (Arabic), cn (Chinese), or hi (Hindi)",
         default="en",
     )
     parser.add_argument(
@@ -170,7 +171,7 @@ def parse_arguments():
         "--background",
         type=int,
         nargs="?",
-        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Pictures",
+        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Image",
         default=0,
     )
     parser.add_argument(
@@ -276,7 +277,19 @@ def parse_arguments():
         "-ft", "--font", type=str, nargs="?", help="Define font to be used"
     )
     parser.add_argument(
-        "-fd", "--font_dir", type=str, nargs="?", help="Define a font directory to be used"
+        "-fd",
+        "--font_dir",
+        type=str,
+        nargs="?",
+        help="Define a font directory to be used",
+    )
+    parser.add_argument(
+        "-id",
+        "--image_dir",
+        type=str,
+        nargs="?",
+        help="Define an image directory to use when background is set to image",
+        default=os.path.join(os.path.split(os.path.realpath(__file__))[0], "images"),
     )
     parser.add_argument(
         "-ca",
@@ -284,6 +297,40 @@ def parse_arguments():
         type=str,
         nargs="?",
         help="Generate upper or lowercase only. arguments: upper or lower. Example: --case upper",
+    )
+    parser.add_argument(
+        "-dt", "--dict", type=str, nargs="?", help="Define the dictionary to be used"
+    )
+    parser.add_argument(
+        "-ws",
+        "--word_split",
+        action="store_true",
+        help="Split on words instead of on characters (preserves ligatures, no character spacing)",
+        default=False,
+    )
+    parser.add_argument(
+        "-stw",
+        "--stroke_width",
+        type=int, 
+        nargs="?",
+        help="Define the width of the strokes",
+        default=0,
+    )
+    parser.add_argument(
+        "-stf",
+        "--stroke_fill",
+        type=str, 
+        nargs="?",
+        help="Define the color of the contour of the strokes, if stroke_width is bigger than 0",
+        default="#282828",
+    )
+    parser.add_argument(
+        "-im",
+        "--image_mode",
+        type=str,
+        nargs="?",
+        help="Define the image mode to be used. RGB is default, L means 8-bit grayscale images, 1 means 1-bit binary images stored with one pixel per byte, etc.",
+        default="RGB",
     )
     return parser.parse_args()
 
@@ -304,7 +351,15 @@ def main():
             raise
 
     # Creating word list
-    lang_dict = load_dict(args.language)
+    if args.dict:
+        lang_dict = []
+        if os.path.isfile(args.dict):
+            with open(args.dict, "r", encoding="utf8", errors="ignore") as d:
+                lang_dict = [l for l in d.read().splitlines() if len(l) > 0]
+        else:
+            sys.exit("Cannot open dict")
+    else:
+        lang_dict = load_dict(args.language)
 
     # Create font (path) list
     if args.font_dir:
@@ -350,6 +405,14 @@ def main():
             args.length, args.random, args.count, lang_dict
         )
 
+    if args.language == "ar":
+        from arabic_reshaper import ArabicReshaper
+
+        arabic_reshaper = ArabicReshaper()
+        strings = [
+            " ".join([arabic_reshaper.reshape(w) for w in s.split(" ")[::-1]])
+            for s in strings
+        ]
     if args.case == "upper":
         strings = [x.upper() for x in strings]
     if args.case == "lower":
@@ -386,6 +449,11 @@ def main():
                 [args.margins] * string_count,
                 [args.fit] * string_count,
                 [args.output_mask] * string_count,
+                [args.word_split] * string_count,
+                [args.image_dir] * string_count,
+                [args.stroke_width] * string_count,
+                [args.stroke_fill] * string_count,
+                [args.image_mode] * string_count,
             ),
         ),
         total=args.count,
@@ -400,6 +468,8 @@ def main():
         ) as f:
             for i in range(string_count):
                 file_name = str(i) + "." + args.extension
+                if args.space_width == 0:
+                    file_name = file_name.replace(" ", "")
                 f.write("{} {}\n".format(file_name, strings[i]))
 
 
